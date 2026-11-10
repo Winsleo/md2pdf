@@ -1,0 +1,23 @@
+{
+  "name": "md2pdf",
+  "version": "1.0.0",
+  "description": "Markdown + LaTeX 公式 + 图片 → PDF（KaTeX 渲染，puppeteer-core 驱动系统 Chrome 打印，带页码）。中文友好，无需安装 LaTeX 或 pandoc。",
+  "bin": {
+    "md2pdf": "./md2pdf.js"
+  },
+  "scripts": {
+    "pdf": "node md2pdf.js",
+    "check": "node md2pdf.js --check",
+    "demo": "node md2pdf.js examples/demo.md -o examples/demo.pdf"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "katex": "0.19.1",
+    "markdown-it": "15.0.3",
+    "markdown-it-texmath": "1.0.0",
+    "puppeteer-core": "24.43.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

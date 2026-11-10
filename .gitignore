@@ -1,0 +1,4 @@
+node_modules/
+*.html.tmp
+examples/demo.pdf
+examples/demo.html
