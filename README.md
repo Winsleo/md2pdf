@@ -43,10 +43,11 @@ node md2pdf.js 报告.md            # 生成 报告.pdf
 
 ## 2. 快速开始
 
-仓库里已经带了依赖（`node_modules/`），在这台机器上可以直接用。
+`node_modules/` 不在仓库里（已被 gitignore），第一次用先装依赖：
 
 ```bash
 cd ~/Code/md2pdf
+npm install                                         # 只装 4 个依赖，不下载浏览器
 
 node md2pdf.js --check                              # 1. 检查环境（第一次用先跑一下）
 node md2pdf.js examples/demo.md -o /tmp/demo.pdf    # 2. 试一下示例
@@ -86,23 +87,25 @@ node md2pdf.js <input.md> [选项]
 | 选项 | 说明 | 默认 |
 |---|---|---|
 | `-o, --output <file.pdf>` | 输出文件 | 与输入同名、同目录的 `.pdf` |
-| `--paper <A4\|A3\|Letter\|Legal>` | 纸张大小 | `A4` |
-| `--margin <mm>` | 页边距：一个数字，或 `上下,左右` | `18,16` |
-| `--font-size <pt>` | 正文字号 | `10.5` |
+| `--paper <A4\|A3\|A5\|B5\|Letter\|Legal\|Tabloid>` | 纸张大小（大小写不敏感） | `A4` |
+| `--margin <mm>` | 页边距：一个数字，或 `上下,左右`（非负，单边 ≤ 100） | `18,16` |
+| `--font-size <pt>` | 正文字号，5–30 | `10.5` |
 | `--font <字体名>` | 正文字体，放在字体栈最前（需要系统里装有） | 自动：Noto Serif CJK SC → Noto Sans CJK SC → 思源宋体 → 宋体/苹方/微软雅黑 → 文泉驿 |
 | `--css <file.css>` | 追加自定义 CSS，可覆盖默认样式 | 无 |
 | `--title <文字>` | PDF 文档标题 | 第一个 `#` 标题 |
 | `--no-h1-break` | 一级标题前不强制换页 | 默认每个 `#` 前换页 |
 | `--no-page-numbers` | 不要页码 | 默认页脚居中显示“当前页 / 总页数” |
 | `--header <文字>` | 每页页眉文字，靠左，小号灰字 | 无 |
+| `--no-html` | 不解析 Markdown 里的原始 HTML（转换来路不明的文档时用） | 默认解析 |
 | `--keep-html` | 保留中间生成的 HTML（与 PDF 同名）| 不保留 |
 | `--chrome <path>` | 指定 Chrome/Chromium 可执行文件 | 自动查找，或读环境变量 `CHROME_PATH` |
 | `--check` | 检查环境后退出 | — |
+| `-v, --version` | 显示版本号 | — |
 | `-h, --help` | 帮助 | — |
 
-退出码：成功为 0，出错为 1（找不到文件、缺依赖、找不到或启动不了 Chrome）。`--chrome` / `CHROME_PATH` 一旦指定就只认它，路径不对会直接报错，不会悄悄换成别的浏览器。
+退出码：成功为 0，出错为 1（找不到文件、缺依赖、找不到或启动不了 Chrome、参数非法）。参数不合法会**直接报错**，不会悄悄换成默认值。`--chrome` / `CHROME_PATH` 一旦指定就只认它，路径不对会直接报错，不会悄悄换成别的浏览器。
 
-也可以用 npm 脚本：`npm run pdf -- 报告.md`、`npm run check`、`npm run demo`。
+也可以用 npm 脚本：`npm run pdf -- 报告.md`、`npm run check`、`npm run demo`、`npm test`。
 
 ## 4. Markdown 写法要点
 
@@ -168,7 +171,7 @@ macOS 和 Windows 系统自带中文字体；Chrome 在常见安装路径会被�
 
 ```bash
 git clone <本仓库> md2pdf && cd md2pdf     # 或直接把整个目录拷过去
-npm install                                  # 若拷贝时带了 node_modules 则不需要
+npm install                                  # 必须执行，仓库里不含 node_modules
 node md2pdf.js --check                       # 全部 [ OK ] 即可使用
 ```
 
@@ -180,6 +183,12 @@ md2pdf 报告.md
 ```
 
 依赖版本已锁定（`package.json` + `package-lock.json`）：markdown-it 15.0.3、katex 0.19.1、markdown-it-texmath 1.0.0、puppeteer-core 24.43.1（支持 Node 18+）。
+
+改完代码想确认没改坏，跑单元测试（不需要 Chrome，纯函数，秒级完成）：
+
+```bash
+npm test
+```
 
 ## 7. 常见问题
 
@@ -193,13 +202,16 @@ md2pdf 报告.md
 → 美元符号和公式之间不要留空格：`$x$` 对，`$ x $` 不行。
 
 **图片没出现**
-→ 终端会警告“张图片没找到”。检查路径是否相对 `.md` 文件，文件名大小写是否一致（Linux 区分大小写）。
+→ 终端会警告“张图片没找到”。检查路径是否相对 `.md` 文件，文件名大小写是否一致（Linux 区分大小写）。路径里带 `%`、`#`、空格、中文都可以，会被正确转义。
 
 **提示“找不到 Chrome/Chromium”**
 → 运行 `--check` 看查找结果；已安装但不在常见位置时：`node md2pdf.js 报告.md --chrome /你的/chrome` 或 `export CHROME_PATH=...`。
 
 **提示“无法启动 Chrome”**
 → 先运行 `--check` 看 Chrome 是否被找到。常见原因：Chrome 版本太老（建议 Chrome 120 以上）、`--chrome` 指到了不是 Chrome 的程序、系统缺少 Chrome 运行所需的库（在最小化的 Linux 容器里常见，装 Chromium 的完整包通常能解决）。输出目录没有写权限也会失败。
+
+**提示“当前环境不允许 Chrome 使用沙箱，已自动改用 --no-sandbox 启动”**
+→ 程序默认让 Chrome 带沙箱跑；某些受限环境（容器、被限制的终端、CI）里 Chrome 沙箱起不来，程序会自动关掉沙箱重试并打印这句提示，结果仍然正确。想显式关掉：`MD2PDF_NO_SANDBOX=1`。这类环境里转来路不明的文档时，建议同时加 `--no-html`。
 
 **标题孤零零落在页底 / 页面底部有大块空白**
 → 标题已经设置了“不与下文分开”；大块空白通常是因为接下来是一张大图或表格（它们设置了“不跨页拆开”）。可以调小图片、拆分表格，或用 `--margin` 调整页边距。
@@ -218,15 +230,19 @@ md2pdf 报告.md
 - **公式只支持 KaTeX 子集**：绝大多数常见数学写法都支持；TikZ、`\newcommand` 复杂宏等不支持。
 - **不会自动生成目录**（TOC）。
 - **图片需在本地**：`http(s)://` 图片不会被内嵌（需要联网才能显示）。
+- **超宽公式不会自动缩小**：比正文宽很多的公式会溢出到页边距，建议手动拆成多行。
+- **默认会执行 Markdown 里的原始 HTML/脚本**（这是为了支持手动分页符等写法）。转换别人发来的 `.md` 时加 `--no-html`。
 
 ## 9. 目录结构
 
 ```
 md2pdf/
-├── md2pdf.js          # 命令行主程序（全部逻辑，约 250 行）
+├── md2pdf.js          # 命令行主程序（全部逻辑，约 380 行）
 ├── package.json       # 依赖与 npm 脚本
 ├── package-lock.json  # 依赖版本锁定
-├── node_modules/      # 依赖（约 65 MB，已放好，可 npm install 重建）
+├── node_modules/      # 依赖（npm install 生成，不入库）
+├── test/
+│   └── md2pdf.test.js # 单元测试：npm test（不需要 Chrome）
 ├── examples/
 │   ├── demo.md        # 功能演示：公式、表格、图片、代码
 │   └── demo.png

@@ -8,7 +8,8 @@
   "scripts": {
     "pdf": "node md2pdf.js",
     "check": "node md2pdf.js --check",
-    "demo": "node md2pdf.js examples/demo.md -o examples/demo.pdf"
+    "demo": "node md2pdf.js examples/demo.md -o examples/demo.pdf",
+    "test": "node --test"
   },
   "license": "MIT",
   "dependencies": {

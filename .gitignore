@@ -1,4 +1,5 @@
 node_modules/
-*.html.tmp
+.DS_Store
 examples/demo.pdf
 examples/demo.html
+*_preview/
